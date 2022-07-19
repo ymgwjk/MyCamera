@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nev_graph"
+    app:startDestination="@id/permissionFragment">
+
+    <fragment
+        android:id="@+id/permissionFragment"
+        android:name="com.dzm.bytesummer.mycamera.fragment.PermissionFragment"
+        android:label="PermissionFragment">
+        <action
+            android:id="@+id/permission_to_camera"
+            app:destination="@id/cameraFragment"
+            app:launchSingleTop="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/cameraFragment"
+        android:name="com.dzm.bytesummer.mycamera.fragment.CameraFragment"
+        android:label="CameraFragment">
+
+    </fragment>
+</navigation>

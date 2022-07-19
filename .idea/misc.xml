@@ -3,7 +3,14 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.1" />
+        <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable/ic_launcher_background.xml" value="0.1" />
+        <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable/ic_shutter.xml" value="0.1" />
+        <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable/ic_shutter_focused.xml" value="0.1" />
+        <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable/ic_shutter_normal.xml" value="0.1" />
+        <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable/ic_shutter_pressed.xml" value="0.1" />
         <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/layout/activity_main.xml" value="0.25364583333333335" />
+        <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/layout/fragment_camera.xml" value="0.25364583333333335" />
         <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/layout/fragment_fullscreen.xml" value="0.264" />
       </map>
     </option>

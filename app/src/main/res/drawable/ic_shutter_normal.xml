@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="@dimen/shutter_size"
+    android:height="@dimen/shutter_size"
+    android:viewportWidth="@dimen/shutter_viewport"
+    android:viewportHeight="@dimen/shutter_viewport">
+    <path
+        android:strokeColor="@color/white"
+        android:strokeWidth="1"
+        android:pathData="M0.5,12 a11.5,11.5 0 1,1 23,0M23.5,12a11.5,11.5 0 0,1 -23,0" />
+    <path android:fillColor="@color/white"
+        android:pathData="M3,12 a9,9 0 1,1 18,0M21,12a9,9 0 1,1 -18,0"/>
+
+</vector>

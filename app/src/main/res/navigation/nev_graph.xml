@@ -15,7 +15,7 @@
     </fragment>
     <fragment
         android:id="@+id/cameraFragment"
-        android:name="com.dzm.bytesummer.mycamera.fragment.CameraFragment"
+        android:name="com.dzm.bytesummer.mycamera.fragment.ShootingFragment"
         android:label="CameraFragment">
 
     </fragment>

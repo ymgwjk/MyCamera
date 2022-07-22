@@ -2,8 +2,8 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="@dimen/shutter_size"
     android:height="@dimen/shutter_size"
-    android:viewportWidth="@dimen/shutter_viewport"
-    android:viewportHeight="@dimen/shutter_viewport">
+    android:viewportWidth="@dimen/vector_viewport"
+    android:viewportHeight="@dimen/vector_viewport">
     <path
         android:strokeColor="@color/white"
         android:strokeWidth="1"

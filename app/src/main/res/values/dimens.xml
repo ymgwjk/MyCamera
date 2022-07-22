@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="shutter_size">74dp</dimen>
-    <item name="shutter_viewport" format="float" type="dimen">24</item>
+    <dimen name="shutter_size">80dp</dimen>
+    <item name="vector_viewport" format="float" type="dimen">24</item>
+    <dimen name="reverse_size">50dp</dimen>
+    <dimen name="reverse_size_pressed">43dp</dimen>
 </resources>

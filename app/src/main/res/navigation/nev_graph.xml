@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nev_graph"
     app:startDestination="@id/permissionFragment">
 
@@ -10,13 +11,47 @@
         android:label="PermissionFragment">
         <action
             android:id="@+id/permission_to_camera"
-            app:destination="@id/cameraFragment"
-            app:launchSingleTop="true" />
+            app:destination="@id/shootingFragment"
+            app:popUpTo="@id/permissionFragment"
+            app:popUpToInclusive="true" />
     </fragment>
+
     <fragment
-        android:id="@+id/cameraFragment"
+        android:id="@+id/shootingFragment"
         android:name="com.dzm.bytesummer.mycamera.fragment.ShootingFragment"
         android:label="CameraFragment">
+        <action
+            android:id="@+id/action_shootingFragment_to_galleryFragment"
+            app:destination="@id/galleryFragment"
+            app:launchSingleTop="true" />
+        <action
+            android:id="@+id/shooting_to_permission"
+            app:destination="@id/permission_to_camera"
+            app:popUpTo="@id/permissionFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 
+    <fragment
+        android:id="@+id/galleryFragment"
+        android:name="com.dzm.bytesummer.mycamera.fragment.GalleryFragment"
+        android:label="fragment_gallery"
+        tools:layout="@layout/fragment_gallery">
+        <argument
+            android:name="directory_path"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_galleryFragment_to_imageViewerFragment"
+            app:destination="@id/imageViewerFragment"
+            app:launchSingleTop="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/imageViewerFragment"
+        android:name="com.dzm.bytesummer.mycamera.fragment.ImageViewerFragment"
+        android:label="fragment_image_viewer"
+        tools:layout="@layout/fragment_image_viewer">
+        <argument
+            android:name="file_absolutename"
+            app:argType="string" />
     </fragment>
 </navigation>

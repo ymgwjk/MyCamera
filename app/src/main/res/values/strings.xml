@@ -2,4 +2,6 @@
     <string name="app_name">MyCamera</string>
     <string name="cpt_btn_hint">Capture</string>
     <string name="rev_btn_hint">Reverse lens</string>
+    <string name="gallery_btn_hint">Gallery</string>
+    <string name="image_description">Image</string>
 </resources>

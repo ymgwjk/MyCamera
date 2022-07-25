@@ -1,7 +1,9 @@
 package com.dzm.bytesummer.mycamera
 
 import android.content.Context
+import android.graphics.Camera
 import android.graphics.ImageFormat
+import android.graphics.drawable.GradientDrawable
 import android.hardware.camera2.*
 import android.hardware.camera2.params.OutputConfiguration
 import android.hardware.camera2.params.SessionConfiguration
@@ -14,20 +16,28 @@ import android.util.Log
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.dzm.bytesummer.mycamera.components.CameraView
+import com.dzm.bytesummer.mycamera.utils.OrientationLiveData
+import com.dzm.bytesummer.mycamera.utils.getExifOrientation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
 import java.io.Closeable
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.TimeoutException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class MyCamera(fragment: Fragment, view: CameraView) {
+class MyCamera(fragment: Fragment, view: CameraView) : Closeable {
     private val cameraView: CameraView
     private val fragment: Fragment
     private val cameraManager: CameraManager
@@ -46,6 +56,8 @@ class MyCamera(fragment: Fragment, view: CameraView) {
     lateinit var imageReader: ImageReader
         private set
 
+    private lateinit var relativeOrient: OrientationLiveData
+
     //image reader 线程
     private val imageReaderThread = HandlerThread("imageReaderThread").apply { start() }
     private val imageReaderHandler = Handler(imageReaderThread.looper)
@@ -61,6 +73,12 @@ class MyCamera(fragment: Fragment, view: CameraView) {
             fragment.context!!.applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         characteristics = cameraManager.getCameraCharacteristics(getCameraId())
         cameraView = view
+    }
+
+    fun initOrientation(context: Context, block: OrientationLiveData.() -> Unit) {
+        relativeOrient = OrientationLiveData(context, characteristics).apply {
+            this.block()
+        }
     }
 
     fun initScreen() {
@@ -121,18 +139,23 @@ class MyCamera(fragment: Fragment, view: CameraView) {
 
     suspend fun prepare(targets: List<Surface>) {
         openCamera()
-        val size = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
-            .getOutputSizes(
-                ImageFormat.JPEG
-            ).maxByOrNull { it.width * it.height }!!
-        imageReader =
-            ImageReader.newInstance(size.width, size.height, ImageFormat.JPEG, IMAGE_BUFFER_SIZE)
         createCaptureSession(cameraDevice, targets)
     }
 
     fun initCamera() = fragment.requireView().post {
         fragment.lifecycleScope.launch(Dispatchers.Main) {
-            val targets = listOf(cameraView.holder.surface)
+            val size = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
+                .getOutputSizes(
+                    ImageFormat.JPEG
+                ).maxByOrNull { it.width * it.height }!!
+            imageReader =
+                ImageReader.newInstance(
+                    size.width,
+                    size.height,
+                    ImageFormat.JPEG,
+                    IMAGE_BUFFER_SIZE
+                )
+            val targets = listOf(cameraView.holder.surface, imageReader.surface)
             prepare(targets)
             startPreview(cameraView)
         }
@@ -140,7 +163,7 @@ class MyCamera(fragment: Fragment, view: CameraView) {
 
 
     suspend fun openCamera() {
-        cameraDevice = suspendCancellableCoroutine<CameraDevice> { it ->
+        cameraDevice = suspendCancellableCoroutine {
             cameraManager.openCamera(getCameraId(), object : CameraDevice.StateCallback() {
                 override fun onOpened(p0: CameraDevice) {
                     //返回相机设备
@@ -151,9 +174,19 @@ class MyCamera(fragment: Fragment, view: CameraView) {
                     fragment.activity!!.finish()
                 }
 
-                override fun onError(p0: CameraDevice, p1: Int) {
+                override fun onError(p0: CameraDevice, error: Int) {
                     p0.close()
-                    Timber.e("Error Occurred")
+                    val msg = when (error) {
+                        ERROR_CAMERA_DEVICE -> "Fatal (device)"
+                        ERROR_CAMERA_DISABLED -> "Device policy"
+                        ERROR_CAMERA_IN_USE -> "Camera in use"
+                        ERROR_CAMERA_SERVICE -> "Fatal (service)"
+                        ERROR_MAX_CAMERAS_IN_USE -> "Maximum cameras in use"
+                        else -> "Unknown"
+                    }
+                    val exc = RuntimeException("Camera ${getCameraId()} error: ($error) $msg")
+                    Timber.d(exc.message, exc)
+                    if (it.isActive) it.resumeWithException(exc)
                 }
             }, cameraHandler)
         }
@@ -193,7 +226,6 @@ class MyCamera(fragment: Fragment, view: CameraView) {
 
         session.setRepeatingRequest(captureRequest.build(), null, cameraHandler)
     }
-
 
     suspend fun takePhoto(shutterAnim: () -> Unit): CombinedCaptureResult =
         suspendCancellableCoroutine {
@@ -243,14 +275,52 @@ class MyCamera(fragment: Fragment, view: CameraView) {
                                 while (imageQueue.size > 0) {
                                     imageQueue.take().close()
                                 }
-
+                                val rotation = relativeOrient.value ?: 0
+                                val mirrored =
+                                    characteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT
+                                val exifOrient = getExifOrientation(rotation, mirrored)
+                                it.resume(
+                                    CombinedCaptureResult(
+                                        image,
+                                        result,
+                                        exifOrient,
+                                        imageReader.imageFormat
+                                    )
+                                )
                             }
                         }
+                        Timber.d("Image Saved")
                     }
                 },
                 cameraHandler
             )
         }
+
+    suspend fun saveResult(result: CombinedCaptureResult): File = suspendCancellableCoroutine {
+        Timber.d("Saving")
+        when (result.format) {
+            ImageFormat.JPEG -> {
+                val buffer = result.image.planes[0].buffer
+                val bytes = ByteArray(buffer.remaining()).apply { buffer.get(this) }
+                try {
+                    val output = createFile(fragment.context!!, "jpg")
+//                    val exif = ExifInterface(output)
+//                    exif.setAttribute(ExifInterface.TAG_ORIENTATION, result.orientation.toString())
+                    FileOutputStream(output).use { it.write(bytes) }
+                    it.resume(output)
+                } catch (e: IOException) {
+                    Timber.e("Unable to write JPEG image to file")
+                    Timber.e(e.stackTraceToString())
+                    it.resumeWithException(e)
+                }
+            }
+            else -> {
+                val exc = RuntimeException("Unknown image format: ${result.image.format}")
+                Timber.e(exc.message, exc)
+                it.resumeWithException(exc)
+            }
+        }
+    }
 
     companion object {
         var cameraIds: Map<Int, String>? = null
@@ -267,7 +337,21 @@ class MyCamera(fragment: Fragment, view: CameraView) {
             override fun close() {
                 image.close()
             }
+        }
 
+        fun createFile(context: Context, extension: String): File {
+            val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_SSS", Locale.CHINA)
+            return File(context.filesDir, "IMG_${sdf.format(Date())}.$extension")
         }
     }
+
+    override fun close() {
+        cameraDevice.close()
+    }
+
+    fun destroy() {
+        cameraThread.quitSafely()
+        imageReaderThread.quitSafely()
+    }
+
 }

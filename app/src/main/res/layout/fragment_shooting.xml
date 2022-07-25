@@ -40,5 +40,18 @@
         android:contentDescription="@string/rev_btn_hint"
         app:srcCompat="@drawable/ic_reverse_face" />
 
+    <ImageButton
+        android:id="@+id/buttonGallery"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="54dp"
+        android:layout_marginBottom="155dp"
+        android:background="@color/alpha"
+        android:contentDescription="@string/gallery_btn_hint"
+        android:minWidth="48dp"
+        android:minHeight="48dp"
+        app:srcCompat="@drawable/ic_gallery" />
+
 
 </FrameLayout>

@@ -21,16 +21,16 @@ fun getTransformMatrix(exifRotation: Int): Matrix {
     when (exifRotation) {
         ExifInterface.ORIENTATION_NORMAL -> Unit
         ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.postScale(-1F, 1F)
-        ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90F)
+        ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(-90F)
         ExifInterface.ORIENTATION_TRANSPOSE -> {
             matrix.postScale(-1f, 1f)
             matrix.postRotate(-90F)
         }
-        ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180F)
+        ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(-180F)
         ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.postScale(1f, -1f)
-        ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(-90f)
+        ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(90f)
         ExifInterface.ORIENTATION_TRANSVERSE -> {
-            matrix.postScale(-1f, 1f)
+            matrix.postScale(1f, -1f)
             matrix.postRotate(90f)
         }
         ExifInterface.ORIENTATION_UNDEFINED -> Unit

@@ -3,6 +3,7 @@ package com.dzm.bytesummer.mycamera.fragment
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,11 +11,13 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
+import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.dzm.bytesummer.mycamera.databinding.FragmentGalleryBinding
+import com.dzm.bytesummer.mycamera.utils.getTransformMatrix
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -62,12 +65,22 @@ class GalleryFragment : Fragment() {
                 .forEach { file ->
                     count++
                     val srcBitmap = getBitmap(file.absolutePath)
-//                    val exifInfo = ExifInterface(file)
-//                    val rotation = exifInfo.getAttributeInt(
-//                        ExifInterface.TAG_ORIENTATION,
-//                        ExifInterface.ORIENTATION_NORMAL
-//                    )
-                    val imageView = createImageView(srcBitmap)
+                    val matrix = getTransformMatrix(
+                        ExifInterface(file).getAttributeInt(
+                            ExifInterface.TAG_ORIENTATION,
+                            ExifInterface.ORIENTATION_NORMAL
+                        )
+                    )
+                    val bitmap = Bitmap.createBitmap(
+                        srcBitmap,
+                        0,
+                        0,
+                        srcBitmap.width,
+                        srcBitmap.height,
+                        matrix,
+                        true
+                    )
+                    val imageView = createImageView(bitmap)
                     imageView.setOnClickListener {
                         lifecycleScope.launch(Dispatchers.Main) {
                             findNavController().navigate(
@@ -96,7 +109,8 @@ class GalleryFragment : Fragment() {
         BitmapFactory.decodeFile(filePath, this)
     }
 
-    private fun createImageView(bitmap: Bitmap): ImageView {
+
+    fun createImageView(bitmap: Bitmap): ImageView {
         val imageView = ImageView(requireContext())
 
         val wm = requireActivity().getSystemService(Context.WINDOW_SERVICE) as WindowManager

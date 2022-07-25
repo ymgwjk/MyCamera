@@ -6,10 +6,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
 import com.dzm.bytesummer.mycamera.databinding.FragmentImageViewerBinding
+import com.dzm.bytesummer.mycamera.utils.getTransformMatrix
 import timber.log.Timber
+import java.io.File
 import kotlin.math.max
 
 class ImageViewerFragment : Fragment() {
@@ -18,6 +21,7 @@ class ImageViewerFragment : Fragment() {
     private val fragmentImageViewerBinding get() = _fragmentBinding!!
 
     private val args by navArgs<ImageViewerFragmentArgs>()
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -29,7 +33,23 @@ class ImageViewerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view.post {
-            val bitmap = getBitmap(args.fileAbsolutename)
+            val imageFile = File(args.fileAbsolutename)
+            val srcBitmap = getBitmap(args.fileAbsolutename)
+            val exifRotation = ExifInterface(imageFile).getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL
+            )
+            Timber.d("exifRotation = $exifRotation")
+            val matrix = getTransformMatrix(exifRotation)
+            val bitmap = Bitmap.createBitmap(
+                srcBitmap,
+                0,
+                0,
+                srcBitmap.width,
+                srcBitmap.height,
+                matrix,
+                true
+            )
             fragmentImageViewerBinding.imageView.setImageBitmap(bitmap)
         }
     }

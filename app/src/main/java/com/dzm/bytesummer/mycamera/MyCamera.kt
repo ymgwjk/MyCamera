@@ -278,7 +278,8 @@ class MyCamera(fragment: Fragment, view: CameraView) : Closeable {
                                 val rotation = relativeOrient.value ?: 0
                                 val mirrored =
                                     characteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT
-                                val exifOrient = getExifOrientation(rotation, mirrored)
+                                val exifOrient =
+                                    getExifOrientation(rotation, mirrored && USE_MIRROR)
                                 it.resume(
                                     CombinedCaptureResult(
                                         image,
@@ -304,8 +305,6 @@ class MyCamera(fragment: Fragment, view: CameraView) : Closeable {
                 val bytes = ByteArray(buffer.remaining()).apply { buffer.get(this) }
                 try {
                     val output = createFile(fragment.context!!, "jpg")
-//                    val exif = ExifInterface(output)
-//                    exif.setAttribute(ExifInterface.TAG_ORIENTATION, result.orientation.toString())
                     FileOutputStream(output).use { it.write(bytes) }
                     it.resume(output)
                 } catch (e: IOException) {
@@ -343,6 +342,8 @@ class MyCamera(fragment: Fragment, view: CameraView) : Closeable {
             val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_SSS", Locale.CHINA)
             return File(context.filesDir, "IMG_${sdf.format(Date())}.$extension")
         }
+
+        private const val USE_MIRROR = false
     }
 
     override fun close() {

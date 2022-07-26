@@ -11,24 +11,19 @@
         android:label="PermissionFragment">
         <action
             android:id="@+id/permission_to_camera"
-            app:destination="@id/shootingFragment"
+            app:destination="@id/photoFragment"
             app:popUpTo="@id/permissionFragment"
             app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
-        android:id="@+id/shootingFragment"
-        android:name="com.dzm.bytesummer.mycamera.fragment.ShootingFragment"
+        android:id="@+id/photoFragment"
+        android:name="com.dzm.bytesummer.mycamera.fragment.PhotoFragment"
         android:label="CameraFragment">
         <action
-            android:id="@+id/action_shootingFragment_to_galleryFragment"
+            android:id="@+id/photo_to_gallery"
             app:destination="@id/galleryFragment"
             app:launchSingleTop="true" />
-        <action
-            android:id="@+id/shooting_to_permission"
-            app:destination="@id/permission_to_camera"
-            app:popUpTo="@id/permissionFragment"
-            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment

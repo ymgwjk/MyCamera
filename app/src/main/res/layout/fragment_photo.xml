@@ -19,7 +19,7 @@
         android:layout_marginBottom="60dp" />
 
     <ImageButton
-        android:id="@+id/buttonShutter"
+        android:id="@+id/button_capture"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|bottom"
@@ -27,7 +27,7 @@
         android:background="@color/alpha"
         android:contentDescription="@string/cpt_btn_hint"
         android:minHeight="48dp"
-        android:src="@drawable/ic_shutter" />
+        android:src="@drawable/ic_capture" />
 
     <ImageButton
         android:id="@+id/buttonReverse"
@@ -52,6 +52,15 @@
         android:minWidth="48dp"
         android:minHeight="48dp"
         app:srcCompat="@drawable/ic_gallery" />
+
+    <Button
+        android:id="@+id/toVideo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:text="@string/vdo_btn_hint"
+        android:background="@color/white"
+        android:layout_marginBottom="5dp"/>
 
 
 </FrameLayout>

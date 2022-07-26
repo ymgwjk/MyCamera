@@ -4,8 +4,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
 import android.view.SurfaceView
-import android.view.TextureView
-import com.dzm.bytesummer.mycamera.fragment.ShootingFragment
 import kotlin.math.roundToInt
 
 class CameraView : SurfaceView {

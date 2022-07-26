@@ -1,48 +1,37 @@
 package com.dzm.bytesummer.mycamera
 
 import android.content.Context
-import android.graphics.Camera
-import android.graphics.ImageFormat
-import android.graphics.drawable.GradientDrawable
 import android.hardware.camera2.*
 import android.hardware.camera2.params.OutputConfiguration
 import android.hardware.camera2.params.SessionConfiguration
 import android.media.Image
-import android.media.ImageReader
-import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
-import android.util.Log
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import androidx.exifinterface.media.ExifInterface
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import com.dzm.bytesummer.mycamera.components.CameraView
 import com.dzm.bytesummer.mycamera.utils.OrientationLiveData
-import com.dzm.bytesummer.mycamera.utils.getExifOrientation
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
 import java.io.Closeable
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.TimeoutException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class MyCamera(fragment: Fragment, view: CameraView) : Closeable {
-    private val cameraView: CameraView
-    private val fragment: Fragment
+class MyCamera : Closeable {
+
     private val cameraManager: CameraManager
 
-    var cameraFace = CameraCharacteristics.LENS_FACING_BACK
+    var cameraFace: Int = 0
+        set(face) {
+            if (field != face) {
+                characteristics = cameraManager.getCameraCharacteristics(getCameraId())
+                Global.cameraFace = face
+            }
+            field = face
+        }
 
     var characteristics: CameraCharacteristics
 
@@ -53,70 +42,21 @@ class MyCamera(fragment: Fragment, view: CameraView) : Closeable {
     lateinit var session: CameraCaptureSession
         private set
 
-    lateinit var imageReader: ImageReader
-        private set
-
-    private lateinit var relativeOrient: OrientationLiveData
-
-    //image reader 线程
-    private val imageReaderThread = HandlerThread("imageReaderThread").apply { start() }
-    private val imageReaderHandler = Handler(imageReaderThread.looper)
-
     //相机线程
-    private val cameraThread = HandlerThread("CameraThread").apply { start() }
-    private val cameraHandler = Handler(cameraThread.looper)
+    val cameraThread = HandlerThread("CameraThread").apply { start() }
+    val cameraHandler = Handler(cameraThread.looper)
 
 
     init {
-        this.fragment = fragment
         cameraManager =
-            fragment.context!!.applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            Global.activity!!.applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         characteristics = cameraManager.getCameraCharacteristics(getCameraId())
-        cameraView = view
+        cameraFace = Global.cameraFace
     }
 
-    fun initOrientation(context: Context, block: OrientationLiveData.() -> Unit) {
-        relativeOrient = OrientationLiveData(context, characteristics).apply {
-            this.block()
-        }
-    }
 
-    fun initScreen() {
-        Log.d("ShootingFragment", "initScreen")
-        cameraView.holder.addCallback(object : SurfaceHolder.Callback {
-            override fun surfaceCreated(p0: SurfaceHolder) {
-                val previewSize = CameraHelper.getPreviewSize(
-                    cameraView.context,
-                    characteristics,
-                    SurfaceHolder::class.java
-                )
-                cameraView.setAspectRatio(
-                    previewSize.width,
-                    previewSize.height
-                )
-                Log.d("ShootingFragment", "cameraSize: ${cameraView.width}x${cameraView.height}")
-                Log.d("ShootingFragment", "previewSize: ${previewSize}")
-            }
-
-            override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {
-            }
-
-            override fun surfaceDestroyed(p0: SurfaceHolder) {
-            }
-        })
-    }
-
-    private fun resetSurfaceSize() {
-        val previewSize = CameraHelper.getPreviewSize(
-            cameraView.context,
-            characteristics,
-            SurfaceHolder::class.java
-        )
-        cameraView.setAspectRatio(
-            previewSize.width,
-            previewSize.height
-        )
-    }
+    fun getPreviewSize(context: Context, targetClass: Class<*>) =
+        CameraHelper.getPreviewSize(context, characteristics, targetClass)
 
 
     fun getCameraId(): String {
@@ -128,41 +68,10 @@ class MyCamera(fragment: Fragment, view: CameraView) : Closeable {
             cameraFace = CameraCharacteristics.LENS_FACING_FRONT
         } else if (cameraFace == CameraCharacteristics.LENS_FACING_FRONT)
             cameraFace = CameraCharacteristics.LENS_FACING_BACK
-        else return
-        cameraDevice.close()
-        session.close()
-        imageReader.close()
-        characteristics = cameraManager.getCameraCharacteristics(getCameraId())
-        resetSurfaceSize()
-        initCamera()
-    }
-
-    suspend fun prepare(targets: List<Surface>) {
-        openCamera()
-        createCaptureSession(cameraDevice, targets)
-    }
-
-    fun initCamera() = fragment.requireView().post {
-        fragment.lifecycleScope.launch(Dispatchers.Main) {
-            val size = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
-                .getOutputSizes(
-                    ImageFormat.JPEG
-                ).maxByOrNull { it.width * it.height }!!
-            imageReader =
-                ImageReader.newInstance(
-                    size.width,
-                    size.height,
-                    ImageFormat.JPEG,
-                    IMAGE_BUFFER_SIZE
-                )
-            val targets = listOf(cameraView.holder.surface, imageReader.surface)
-            prepare(targets)
-            startPreview(cameraView)
-        }
     }
 
 
-    suspend fun openCamera() {
+    suspend fun open() {
         cameraDevice = suspendCancellableCoroutine {
             cameraManager.openCamera(getCameraId(), object : CameraDevice.StateCallback() {
                 override fun onOpened(p0: CameraDevice) {
@@ -171,7 +80,7 @@ class MyCamera(fragment: Fragment, view: CameraView) : Closeable {
                 }
 
                 override fun onDisconnected(p0: CameraDevice) {
-                    fragment.activity!!.finish()
+                    Global.activity!!.finish()
                 }
 
                 override fun onError(p0: CameraDevice, error: Int) {
@@ -194,11 +103,10 @@ class MyCamera(fragment: Fragment, view: CameraView) : Closeable {
 
 
     suspend fun createCaptureSession(
-        device: CameraDevice,
         targets: List<Surface>,
     ) {
         session = suspendCancellableCoroutine {
-            device.createCaptureSession(
+            cameraDevice.createCaptureSession(
                 SessionConfiguration(
                     SessionConfiguration.SESSION_REGULAR,
                     targets.map { OutputConfiguration(it) },
@@ -227,100 +135,6 @@ class MyCamera(fragment: Fragment, view: CameraView) : Closeable {
         session.setRepeatingRequest(captureRequest.build(), null, cameraHandler)
     }
 
-    suspend fun takePhoto(shutterAnim: () -> Unit): CombinedCaptureResult =
-        suspendCancellableCoroutine {
-            while (imageReader.acquireNextImage() != null) continue
-
-            val imageQueue = ArrayBlockingQueue<Image>(IMAGE_BUFFER_SIZE)
-            imageReader.setOnImageAvailableListener({ reader ->
-                val image = reader.acquireNextImage()
-                imageQueue.add(image)
-            }, imageReaderHandler)
-
-            val captureRequest =
-                cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
-                    .apply { addTarget(imageReader.surface) }
-            session.capture(
-                captureRequest.build(),
-                object : CameraCaptureSession.CaptureCallback() {
-                    override fun onCaptureStarted(
-                        session: CameraCaptureSession,
-                        request: CaptureRequest,
-                        timestamp: Long,
-                        frameNumber: Long
-                    ) {
-                        super.onCaptureStarted(session, request, timestamp, frameNumber)
-                        shutterAnim()
-                    }
-
-                    override fun onCaptureCompleted(
-                        session: CameraCaptureSession,
-                        request: CaptureRequest,
-                        result: TotalCaptureResult
-                    ) {
-                        super.onCaptureCompleted(session, request, result)
-                        val resultTimestamp = result.get(CaptureResult.SENSOR_TIMESTAMP)
-                        val exc = TimeoutException("Image dequeuing time out")
-                        val timeoutRunnable = Runnable { it.resumeWithException(exc) }
-                        imageReaderHandler.postDelayed(timeoutRunnable, IMAGE_CAPTURE_TIME_LIMIT)
-
-                        @Suppress("BlockingMethodInNonBlockingContext")
-                        fragment.lifecycleScope.launch(it.context) {
-                            while (true) {
-                                val image = imageQueue.take()
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && image.format != ImageFormat.DEPTH_JPEG && image.timestamp != resultTimestamp)
-                                    continue
-                                imageReaderHandler.removeCallbacks(timeoutRunnable)
-                                imageReader.setOnImageAvailableListener(null, null)
-                                while (imageQueue.size > 0) {
-                                    imageQueue.take().close()
-                                }
-                                val rotation = relativeOrient.value ?: 0
-                                val mirrored =
-                                    characteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT
-                                val exifOrient =
-                                    getExifOrientation(rotation, mirrored && USE_MIRROR)
-                                it.resume(
-                                    CombinedCaptureResult(
-                                        image,
-                                        result,
-                                        exifOrient,
-                                        imageReader.imageFormat
-                                    )
-                                )
-                            }
-                        }
-                        Timber.d("Image Saved")
-                    }
-                },
-                cameraHandler
-            )
-        }
-
-    suspend fun saveResult(result: CombinedCaptureResult): File = suspendCancellableCoroutine {
-        Timber.d("Saving")
-        when (result.format) {
-            ImageFormat.JPEG -> {
-                val buffer = result.image.planes[0].buffer
-                val bytes = ByteArray(buffer.remaining()).apply { buffer.get(this) }
-                try {
-                    val output = createFile(fragment.context!!, "jpg")
-                    FileOutputStream(output).use { it.write(bytes) }
-                    it.resume(output)
-                } catch (e: IOException) {
-                    Timber.e("Unable to write JPEG image to file")
-                    Timber.e(e.stackTraceToString())
-                    it.resumeWithException(e)
-                }
-            }
-            else -> {
-                val exc = RuntimeException("Unknown image format: ${result.image.format}")
-                Timber.e(exc.message, exc)
-                it.resumeWithException(exc)
-            }
-        }
-    }
-
     companion object {
         var cameraIds: Map<Int, String>? = null
 
@@ -343,16 +157,12 @@ class MyCamera(fragment: Fragment, view: CameraView) : Closeable {
             return File(context.filesDir, "IMG_${sdf.format(Date())}.$extension")
         }
 
-        private const val USE_MIRROR = false
+        const val USE_MIRROR = false
     }
 
     override fun close() {
         cameraDevice.close()
-    }
-
-    fun destroy() {
-        cameraThread.quitSafely()
-        imageReaderThread.quitSafely()
+        session.close()
     }
 
 }

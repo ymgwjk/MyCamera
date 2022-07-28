@@ -13,8 +13,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.dzm.bytesummer.mycamera.MyCamera
-import com.dzm.bytesummer.mycamera.R
 
 
 class PermissionFragment : Fragment() {
@@ -22,7 +20,7 @@ class PermissionFragment : Fragment() {
     private val permissionsLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
             if (result.all { it.value }) {
-                navigateToShooting()
+                navigateToPhoto()
             } else {
                 Toast.makeText(context, "Permission request denied", Toast.LENGTH_LONG).show()
             }
@@ -31,19 +29,23 @@ class PermissionFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (hasPermission(requireContext())) {
-            navigateToShooting()
+            navigateToPhoto()
         } else {
             permissionsLauncher.launch(PERMISSION_REQUIRED)
         }
     }
 
-    private fun navigateToShooting() {
+    private fun navigateToPhoto() {
         val cameraManager =
             requireContext().getSystemService(Context.CAMERA_SERVICE) as CameraManager
         val cameraIds = enumerateCameras(cameraManager)
         if (cameraIds[CameraCharacteristics.LENS_FACING_BACK] != null && cameraIds[CameraCharacteristics.LENS_FACING_FRONT] != null) {
-            MyCamera.cameraIds = cameraIds
-            lifecycleScope.launchWhenStarted { findNavController().navigate(R.id.permission_to_camera) }
+//            MyCamera.cameraIds = cameraIds
+            lifecycleScope.launchWhenStarted {
+                findNavController().navigate(
+                    PermissionFragmentDirections.permissionToCamera()
+                )
+            }
         } else
             Toast.makeText(
                 context,
@@ -53,7 +55,9 @@ class PermissionFragment : Fragment() {
     }
 
     companion object {
-        private val PERMISSION_REQUIRED = arrayOf(Manifest.permission.CAMERA)
+        private val PERMISSION_REQUIRED =
+            arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
+
         private fun hasPermission(context: Context): Boolean {
             return PERMISSION_REQUIRED.all {
                 ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED

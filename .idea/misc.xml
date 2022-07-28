@@ -10,6 +10,12 @@
         <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable/ic_receive.xml" value="0.1" />
         <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable/ic_receive_normal.xml" value="0.1" />
         <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable/ic_receive_pressed.xml" value="0.1" />
+        <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable/ic_record.xml" value="0.1" />
+        <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable/ic_record_normal.xml" value="0.1" />
+        <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable/ic_record_pressed.xml" value="0.1" />
+        <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable/ic_record_stop.xml" value="0.1" />
+        <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable/ic_record_stop_normal.xml" value="0.1" />
+        <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable/ic_record_stop_pressed.xml" value="0.1" />
         <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable/ic_reverse_face.xml" value="0.1" />
         <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable/ic_reverse_face_normal.xml" value="0.1" />
         <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/drawable/ic_reverse_face_pressed.xml" value="0.1" />
@@ -24,7 +30,9 @@
         <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/layout/fragment_fullscreen.xml" value="0.264" />
         <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/layout/fragment_gallery.xml" value="0.16909722222222223" />
         <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/layout/fragment_image_viewer.xml" value="0.16909722222222223" />
+        <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/layout/fragment_photo.xml" value="0.16909722222222223" />
         <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/layout/fragment_shooting.xml" value="0.2" />
+        <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/layout/fragment_video.xml" value="0.16909722222222223" />
         <entry key="..\:/dzm/chengxu/android/MyCamera/app/src/main/res/layout/fragment_video_preview.xml" value="0.16909722222222223" />
       </map>
     </option>

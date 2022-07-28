@@ -1,4 +1,4 @@
-package com.dzm.bytesummer.mycamera
+package com.dzm.bytesummer.mycamera.camera
 
 import android.content.Context
 import android.graphics.Point

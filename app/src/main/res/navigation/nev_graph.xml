@@ -24,6 +24,10 @@
             android:id="@+id/photo_to_gallery"
             app:destination="@id/galleryFragment"
             app:launchSingleTop="true" />
+        <action
+            android:id="@+id/photo_to_video"
+            app:destination="@id/videoPreviewFragment"
+            app:launchSingleTop="true" />
     </fragment>
 
     <fragment
@@ -48,5 +52,17 @@
         <argument
             android:name="file_absolutename"
             app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/videoPreviewFragment"
+        android:name="com.dzm.bytesummer.mycamera.fragment.VideoFragment"
+        android:label="VideoPreviewFragment" >
+        <action
+            android:id="@+id/video_to_photo"
+            app:destination="@id/photoFragment"
+            app:launchSingleTop="true" />
+        <action
+            android:id="@+id/action_videoPreviewFragment_to_galleryFragment"
+            app:destination="@id/galleryFragment" />
     </fragment>
 </navigation>

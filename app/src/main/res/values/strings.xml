@@ -6,5 +6,6 @@
     <string name="image_description">Image</string>
     <string name="vdo_btn_hint">录像</string>
     <string name="cmr_btn_hint">拍照</string>
-    <string name="rec_btn_hint">Receive</string>
+    <string name="rec_btn_hint">Record</string>
+    <string name="rec_stop_btn_hint">StopRecord</string>
 </resources>

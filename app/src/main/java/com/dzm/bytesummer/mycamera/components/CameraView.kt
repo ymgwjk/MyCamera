@@ -15,13 +15,6 @@ class CameraView : SurfaceView {
         defStyleAttr
     )
 
-    constructor(
-        context: Context,
-        attrs: AttributeSet?,
-        defStyleAttr: Int,
-        defStyleRes: Int
-    ) : super(context, attrs, defStyleAttr, defStyleRes)
-
     private var aspectRatio = 0f
 
     fun setAspectRatio(width: Int, height: Int) {

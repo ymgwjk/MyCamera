@@ -6,13 +6,17 @@ import android.content.pm.PackageManager
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CameraMetadata
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class PermissionFragment : Fragment() {
@@ -22,7 +26,14 @@ class PermissionFragment : Fragment() {
             if (result.all { it.value }) {
                 navigateToPhoto()
             } else {
-                Toast.makeText(context, "Permission request denied", Toast.LENGTH_LONG).show()
+                result.filter { !it.value }.forEach {
+                    Toast.makeText(
+                        context,
+                        "Permission request denied: ${it.key}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+                activity!!.finish()
             }
         }
 
@@ -36,53 +47,27 @@ class PermissionFragment : Fragment() {
     }
 
     private fun navigateToPhoto() {
-        val cameraManager =
-            requireContext().getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        val cameraIds = enumerateCameras(cameraManager)
-        if (cameraIds[CameraCharacteristics.LENS_FACING_BACK] != null && cameraIds[CameraCharacteristics.LENS_FACING_FRONT] != null) {
-//            MyCamera.cameraIds = cameraIds
-            lifecycleScope.launchWhenStarted {
-                findNavController().navigate(
-                    PermissionFragmentDirections.permissionToCamera()
-                )
-            }
-        } else
-            Toast.makeText(
-                context,
-                "Sorry, your camera cannot meet the require.",
-                Toast.LENGTH_LONG
-            ).show()
+        lifecycleScope.launch(Dispatchers.Main) {
+            findNavController().navigate(PermissionFragmentDirections.permissionToCamera())
+        }
     }
 
     companion object {
         private val PERMISSION_REQUIRED =
-            arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
+            mutableListOf(
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.ACCESS_MEDIA_LOCATION,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ).apply {
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P)
+                    add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }.toTypedArray()
 
         private fun hasPermission(context: Context): Boolean {
             return PERMISSION_REQUIRED.all {
                 ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
             }
-        }
-
-        private fun enumerateCameras(cameraManager: CameraManager): HashMap<Int, String> {
-            val availableCameras = HashMap<Int, String>()
-            val cameraIds = cameraManager.cameraIdList.filter {
-                val characteristics = cameraManager.getCameraCharacteristics(it)
-                val capabilities =
-                    characteristics.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)
-                capabilities?.contains(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_BACKWARD_COMPATIBLE)
-                    ?: false
-            }
-            cameraIds.forEach { cameraID ->
-                val characteristics = cameraManager.getCameraCharacteristics(cameraID)
-                if (characteristics[CameraCharacteristics.LENS_FACING] == CameraCharacteristics.LENS_FACING_FRONT) {
-                    availableCameras[CameraCharacteristics.LENS_FACING_FRONT] = cameraID
-                }
-                if (characteristics[CameraCharacteristics.LENS_FACING] == CameraCharacteristics.LENS_FACING_BACK) {
-                    availableCameras[CameraCharacteristics.LENS_FACING_BACK] = cameraID
-                }
-            }
-            return availableCameras
         }
     }
 }

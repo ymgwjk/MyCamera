@@ -3,9 +3,10 @@
     <string name="cpt_btn_hint">Capture</string>
     <string name="rev_btn_hint">Reverse lens</string>
     <string name="gallery_btn_hint">Gallery</string>
-    <string name="image_description">Image</string>
+    <string name="image_description">Gallery</string>
     <string name="vdo_btn_hint">录像</string>
     <string name="cmr_btn_hint">拍照</string>
     <string name="rec_btn_hint">Record</string>
     <string name="rec_stop_btn_hint">StopRecord</string>
+    <string name="video_ctrl_btn_hint">Video Control</string>
 </resources>

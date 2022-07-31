@@ -27,7 +27,11 @@
         <action
             android:id="@+id/photo_to_video"
             app:destination="@id/videoPreviewFragment"
-            app:launchSingleTop="true" />
+            app:popUpTo="@id/photoFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/photo_to_permission"
+            app:destination="@id/permissionFragment" />
     </fragment>
 
     <fragment
@@ -35,12 +39,13 @@
         android:name="com.dzm.bytesummer.mycamera.fragment.GalleryFragment"
         android:label="fragment_gallery"
         tools:layout="@layout/fragment_gallery">
-        <argument
-            android:name="directory_path"
-            app:argType="string" />
         <action
-            android:id="@+id/action_galleryFragment_to_imageViewerFragment"
+            android:id="@+id/gallery_to_imageViewer"
             app:destination="@id/imageViewerFragment"
+            app:launchSingleTop="true" />
+        <action
+            android:id="@+id/gallery_to_videoViewer"
+            app:destination="@id/videoViewerFragment"
             app:launchSingleTop="true" />
     </fragment>
 
@@ -60,9 +65,23 @@
         <action
             android:id="@+id/video_to_photo"
             app:destination="@id/photoFragment"
+            app:popUpTo="@id/videoPreviewFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/video_to_gallery"
+            app:destination="@id/galleryFragment"
             app:launchSingleTop="true" />
         <action
-            android:id="@+id/action_videoPreviewFragment_to_galleryFragment"
-            app:destination="@id/galleryFragment" />
+            android:id="@+id/video_to_permission"
+            app:destination="@id/permissionFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/videoViewerFragment"
+        android:name="com.dzm.bytesummer.mycamera.fragment.VideoViewerFragment"
+        android:label="fragment_video_viewer"
+        tools:layout="@layout/fragment_video_viewer" >
+        <argument
+            android:name="videoUri"
+            app:argType="android.net.Uri" />
     </fragment>
 </navigation>

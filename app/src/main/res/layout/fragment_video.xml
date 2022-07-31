@@ -6,8 +6,8 @@
     android:layout_height="match_parent"
     android:background="@color/black">
 
-    <com.dzm.bytesummer.mycamera.components.CameraView
-        android:id="@+id/videoView"
+    <androidx.camera.view.PreviewView
+        android:id="@+id/cameraView2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginBottom="60dp" />
@@ -34,7 +34,7 @@
         android:text="@string/cmr_btn_hint" />
 
     <ImageButton
-        android:id="@+id/buttonStartRec"
+        android:id="@+id/buttonRec"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|bottom"
@@ -54,15 +54,5 @@
         android:contentDescription="@string/rev_btn_hint"
         app:srcCompat="@drawable/ic_reverse_face" />
 
-    <ImageButton
-        android:id="@+id/buttonStopRec"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="140dp"
-        android:background="@color/alpha"
-        android:contentDescription="@string/rec_stop_btn_hint"
-        android:src="@drawable/ic_record_stop"
-        android:visibility="invisible" />
 
 </FrameLayout>

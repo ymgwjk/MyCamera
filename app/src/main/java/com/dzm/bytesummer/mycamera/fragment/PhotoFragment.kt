@@ -1,10 +1,10 @@
 package com.dzm.bytesummer.mycamera.fragment
 
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -21,7 +21,6 @@ import com.dzm.bytesummer.mycamera.utils.FileUtils.Companion.uriToPath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.io.File
 
 class PhotoFragment : Fragment() {
 

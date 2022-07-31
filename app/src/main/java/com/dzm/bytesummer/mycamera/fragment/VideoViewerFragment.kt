@@ -1,20 +1,17 @@
 package com.dzm.bytesummer.mycamera.fragment
 
-import android.media.Image
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.provider.OpenableColumns
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.MediaController
-import android.widget.VideoView
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import com.dzm.bytesummer.mycamera.R
@@ -53,7 +50,7 @@ class VideoViewerFragment : Fragment() {
         }
         viewBinding.videoController.setImageResource(R.drawable.ic_pause)
         viewBinding.videoController.setOnClickListener {
-            if (viewBinding.videoView.isPlaying()) {
+            if (viewBinding.videoView.isPlaying) {
                 it.isEnabled = false
                 (it as ImageButton).setImageResource(R.drawable.ic_play)
                 viewBinding.videoView.pause()
@@ -77,8 +74,6 @@ class VideoViewerFragment : Fragment() {
             return
         }
 
-        val filePath = uriToPath(context!!, uri) ?: return
-        val fileInfo = "FileSize: $fileSize\n $filePath"
 
         val mc = MediaController(requireContext())
         viewBinding.videoView.apply {

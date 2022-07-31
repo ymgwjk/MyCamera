@@ -6,7 +6,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.icu.text.SimpleDateFormat
 import android.os.Build
-import android.os.Environment
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.camera.core.CameraSelector
@@ -17,7 +16,6 @@ import androidx.lifecycle.LifecycleOwner
 import com.dzm.bytesummer.mycamera.utils.FileUtils.Companion.FILENAME_FORMAT
 import com.dzm.bytesummer.mycamera.utils.FileUtils.Companion.uriToPath
 import timber.log.Timber
-import java.io.File
 import java.util.*
 import java.util.concurrent.ExecutorService
 

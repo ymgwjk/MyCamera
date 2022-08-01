@@ -1,10 +1,7 @@
 package com.dzm.bytesummer.mycamera.fragment
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowInsets
+import android.view.*
 import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -16,8 +13,10 @@ import com.dzm.bytesummer.mycamera.camera.VideoStateCallbacks
 import com.dzm.bytesummer.mycamera.databinding.FragmentVideoBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.math.max
+import kotlin.math.min
 
-class VideoFragment : Fragment() {
+class VideoFragment : Fragment(), ZoomEnabledCameraFragment {
 
     private var _fragmentVideoBinding: FragmentVideoBinding? = null
     private val fragmentVideoBinding get() = _fragmentVideoBinding!!
@@ -25,6 +24,9 @@ class VideoFragment : Fragment() {
     private val navController: NavController by lazy {
         Navigation.findNavController(activity!!, R.id.fragmentContainer)
     }
+
+    override var zoomRatio = 1f
+    override lateinit var scaleDetector: ScaleGestureDetector
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -80,6 +82,26 @@ class VideoFragment : Fragment() {
         }
         fragmentVideoBinding.buttonGallery2.setOnClickListener {
             navigateToGallery()
+        }
+
+        zoomRatio = 1f
+        scaleDetector = ScaleGestureDetector(
+            requireContext(),
+            object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                override fun onScale(detector: ScaleGestureDetector): Boolean {
+                    zoomRatio *= detector.scaleFactor
+                    zoomRatio =
+                        max(zoomRatio, 1f)
+                    zoomRatio =
+                        min(zoomRatio, 2f)
+                    val linearZoom = zoomRatio - 1
+                    camera.linearZoom(linearZoom)
+                    return true
+                }
+            })
+        fragmentVideoBinding.cameraView2.setOnTouchListener { cView, motionEvent ->
+            cView.performClick()
+            scaleDetector.onTouchEvent(motionEvent) || cView.onTouchEvent(motionEvent)
         }
     }
 

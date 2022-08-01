@@ -8,6 +8,7 @@ import android.icu.text.SimpleDateFormat
 import android.os.Build
 import android.provider.MediaStore
 import android.widget.Toast
+import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.video.*
@@ -18,9 +19,12 @@ import com.dzm.bytesummer.mycamera.utils.FileUtils.Companion.uriToPath
 import timber.log.Timber
 import java.util.*
 import java.util.concurrent.ExecutorService
+import kotlin.math.max
+import kotlin.math.min
 
-class VideoCamera : IPreviewCamera {
+class VideoCamera : IPreviewCamera, ZoomEnabledCamera {
     override lateinit var cameraExecutor: ExecutorService
+    override lateinit var camera: Camera
     override var previewSurface: Preview.SurfaceProvider? = null
     private var videoCapture: VideoCapture<Recorder>? = null
     private lateinit var recorder: Recorder
@@ -38,7 +42,7 @@ class VideoCamera : IPreviewCamera {
             )
         ).build()
         videoCapture = VideoCapture.withOutput(recorder)
-        CameraBase.iStartCamera(context, lifecycleOwner, preview!!, videoCapture!!)
+        iStartCamera(context, lifecycleOwner, preview!!, videoCapture!!)
     }
 
     override fun switch(context: Context, lifecycleOwner: LifecycleOwner) {
@@ -116,5 +120,11 @@ class VideoCamera : IPreviewCamera {
 
     companion object {
         const val VIDEO_PATH = "Movies/MyCamera"
+    }
+
+    override fun linearZoom(linear: Float) {
+        var clampedLinear = max(linear, 0f)
+        clampedLinear = min(clampedLinear, 1f)
+        camera.cameraControl.setLinearZoom(clampedLinear)
     }
 }

@@ -3,6 +3,7 @@ package com.dzm.bytesummer.mycamera.fragment
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -21,8 +22,10 @@ import com.dzm.bytesummer.mycamera.utils.FileUtils.Companion.uriToPath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import kotlin.math.max
+import kotlin.math.min
 
-class PhotoFragment : Fragment() {
+class PhotoFragment : Fragment(), ZoomEnabledCameraFragment {
 
     private var _fragmentPhotoBinding: FragmentPhotoBinding? = null
 
@@ -45,6 +48,9 @@ class PhotoFragment : Fragment() {
             )
         }
     }
+
+    override var zoomRatio = 1f
+    override lateinit var scaleDetector: ScaleGestureDetector
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -97,6 +103,27 @@ class PhotoFragment : Fragment() {
         fragmentPhotoBinding.toVideo.setOnClickListener {
             navigateToVideo()
         }
+        
+        zoomRatio = 1f
+        scaleDetector = ScaleGestureDetector(
+            requireContext(),
+            object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                override fun onScale(detector: ScaleGestureDetector): Boolean {
+                    zoomRatio *= detector.scaleFactor
+                    zoomRatio =
+                        max(zoomRatio, 1f)
+                    zoomRatio =
+                        min(zoomRatio, 2f)
+                    val linearZoom = zoomRatio - 1
+                    camera.linearZoom(linearZoom)
+                    return true
+                }
+            })
+        fragmentPhotoBinding.cameraView.setOnTouchListener { cView, motionEvent ->
+            cView.performClick()
+            scaleDetector.onTouchEvent(motionEvent) || cView.onTouchEvent(motionEvent)
+        }
+
     }
 
     private fun switch() {

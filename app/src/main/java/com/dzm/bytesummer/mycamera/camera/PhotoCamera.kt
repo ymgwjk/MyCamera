@@ -7,25 +7,27 @@ import android.icu.text.SimpleDateFormat
 import android.os.Build
 import android.provider.MediaStore
 import android.widget.Toast
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.Preview
+import androidx.camera.core.*
 import androidx.lifecycle.LifecycleOwner
 import com.dzm.bytesummer.mycamera.utils.FileUtils.Companion.FILENAME_FORMAT
 import java.util.*
 import java.util.concurrent.ExecutorService
+import kotlin.math.max
+import kotlin.math.min
 
-class PhotoCamera : IPreviewCamera {
+class PhotoCamera : IPreviewCamera, ZoomEnabledCamera {
     override lateinit var cameraExecutor: ExecutorService
+    override lateinit var camera: Camera
     override var previewSurface: Preview.SurfaceProvider? = null
     private var imageCapture: ImageCapture? = null
     private var preview: Preview? = null
+
     override fun startCamera(context: Context, lifecycleOwner: LifecycleOwner) {
         super.startCamera(context, lifecycleOwner)
         preview = Preview.Builder().build()
             .apply { setSurfaceProvider(previewSurface) }
         imageCapture = ImageCapture.Builder().build()
-        CameraBase.iStartCamera(context, lifecycleOwner, preview!!, imageCapture!!)
+        iStartCamera(context, lifecycleOwner, preview!!, imageCapture!!)
     }
 
     override fun switch(context: Context, lifecycleOwner: LifecycleOwner) {
@@ -34,6 +36,12 @@ class PhotoCamera : IPreviewCamera {
         else if (CameraBase.FACE == CameraSelector.DEFAULT_FRONT_CAMERA)
             CameraBase.FACE = CameraSelector.DEFAULT_BACK_CAMERA
         startCamera(context, lifecycleOwner)
+    }
+
+    override fun linearZoom(linear: Float) {
+        var clampedLinear = max(linear, 0f)
+        clampedLinear = min(clampedLinear, 1f)
+        camera.cameraControl.setLinearZoom(clampedLinear)
     }
 
     fun takePhoto(
